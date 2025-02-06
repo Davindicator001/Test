@@ -1,11 +1,12 @@
-const { default: makeWASocket, useMultiFileAuthState, usePairingCode } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
 
     const sock = makeWASocket({
         auth: state,
-        browser: ['Ubuntu', 'Chrome', '22.04.4']
+        browser: ['Ubuntu', 'Chrome', '22.04.4'],
+        printQRInTerminal: true // This will print the QR code to the terminal
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -14,18 +15,17 @@ async function startBot() {
     const phoneNumber = '+2349051217349';
     const formattedPhone = phoneNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
 
-    // Use pairing code authentication instead of QR
-    const pairingCode = await usePairingCode(sock, phoneNumber);
-    console.log(`🚀 Pairing Code for ${phoneNumber}: ${pairingCode}`);
-
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
-        if (connection === 'open') {
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) {
+                console.log('⚠️ Connection closed, reconnecting...');
+                startBot(); // Auto-reconnect
+            }
+        } else if (connection === 'open') {
             console.log('✅ Connection established!');
-        } else if (connection === 'close') {
-            console.log('⚠️ Connection closed, reconnecting...');
-            startBot(); // Auto-reconnect
         } else {
             console.log('ℹ️ Connection update:', update);
         }
