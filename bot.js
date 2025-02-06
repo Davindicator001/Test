@@ -26,10 +26,10 @@ async function startBot() {
         });
 
         // When the connection is open, save the session to avoid pairing code on future runs
-        conn.on('open', () => 
+        conn.on('open', () => {
             console.log('Connection is open');
             fs.writeFileSync('session.json', JSON.stringify(conn.base64EncodedAuthInfo(), null, 2));
-        );
+        });
 
         // Authenticate the bot with the phone number
 conn.user.jid = `{formattedPhone}@s.whatsapp.net`;
