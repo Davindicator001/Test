@@ -18,17 +18,19 @@ async function startBot() {
 
     // Listen for pairing code and log it
     sock.ev.on('connection.update', (update) => {
-        const { pairingCode, connection } = update;
+        const { connection, lastDisconnect, pairingCode } = update;
 
         if (pairingCode) {
-            console.log(`Pairing Code for ${phoneNumber}: ${pairingCode}`);
+            console.log(`🚀 Pairing Code for ${phoneNumber}: ${pairingCode}`);
         }
 
         if (connection === 'open') {
-            console.log('Connection established!');
+            console.log('✅ Connection established!');
         } else if (connection === 'close') {
-            console.log('Connection closed, reconnecting...');
+            console.log('⚠️ Connection closed, reconnecting...');
             startBot(); // Auto-reconnect
+        } else {
+            console.log('ℹ️ Connection update:', update);
         }
     });
 
@@ -49,9 +51,9 @@ async function startBot() {
         }
     });
 
-    console.log("Bot is running...");
+    console.log("🤖 Bot is running...");
 }
 
 startBot().catch((err) => {
-    console.error("Error:", err);
+    console.error("❌ Error:", err);
 });
