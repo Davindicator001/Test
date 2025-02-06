@@ -1,57 +1,56 @@
-
-const { WAConnection, MessageType } = require('@adiwajshing/baileys');
+const { default: makeWASocket, useSingleFileAuthState, makeWALegacySocket } = require('@whiskeysockets/baileys');
 const fs = require('fs');
-const readline = require('readline');
+
+// Load authentication state
+const { state, saveState } = useSingleFileAuthState('session.json');
 
 async function startBot() {
-    const conn = new WAConnection();
-
-    // Collect the phone number to link to the bot
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false // Disable QR code display
     });
 
-    phoneNumber = '+2349051217349'
+    // Save authentication state when updated
+    sock.ev.on('creds.update', saveState);
 
-        // Make sure the phone number is correctly formatted
-        const formattedPhone = phoneNumber.replace(/[^0-9]/g, '');
+    // Listen for pairing code and log it instead of showing QR code
+    sock.ev.on('connection.update', (update) => {
+        const { pairingCode, connection } = update;
 
-        // Load previous session if it exists
-        conn.loadAuthInfo('session.json');
+        if (pairingCode) {
+            console.log(`Pairing Code for ${phoneNumber}: ${pairingCode}`);
+        }
 
-        // Log pairing code when it's needed
-        conn.on('open', () => {
-            console.log(`Pairing code: conn.base64EncodedAuthInfo().toString()`);
-        });
+        if (connection === 'open') {
+            console.log('Connection established!');
+        } else if (connection === 'close') {
+            console.log('Connection closed, reconnecting...');
+            startBot(); // Auto-reconnect
+        }
+    });
 
-        // When the connection is open, save the session to avoid pairing code on future runs
-        conn.on('open', () => {
-            console.log('Connection is open');
-            fs.writeFileSync('session.json', JSON.stringify(conn.base64EncodedAuthInfo(), null, 2));
-        });
+    // Set the bot's phone number
+    const phoneNumber = '+2349051217349';
+    const formattedPhone = phoneNumber.replace(/[^0-9]/g, '');
+    sock.user = { id: `${formattedPhone}@s.whatsapp.net` };
 
-        // Authenticate the bot with the phone number
-conn.user.jid = `{formattedPhone}@s.whatsapp.net`;
+    // Handle incoming messages
+    sock.ev.on('messages.upsert', async (msg) => {
+        const message = msg.messages[0];
+        if (!message.message) return; // Ignore system messages
 
-        // Respond to "ping" with "pong"
-        conn.on('chat-update', async (chat) => {
-            if (!chat.hasNewMessage) return;
-            const message = chat.messages.all()[0];
+        const sender = message.key.remoteJid;
+        const textMessage = message.message.conversation || "";
 
-            // Check if the message is from the bot number
-            if (message.key.remoteJid === conn.user.jid) {
-                // Check if the message content is 'ping'
-                if (message.message.conversation === 'ping') {
-                    console.log('Ping received, sending pong...');
-                    await conn.sendMessage(message.key.remoteJid, 'pong', MessageType.text);
-                }
-            }
-        });
+        if (textMessage.toLowerCase() === "ping") {
+            await sock.sendMessage(sender, { text: "pong" });
+            console.log("Ping received, sent pong.");
+        }
+    });
 
-        // Initialize the connection
-        await conn.connect();
-};
+    console.log("Bot is running...");
+}
+
 startBot().catch((err) => {
-    console.log('Error:', err);
+    console.error("Error:", err);
 });
