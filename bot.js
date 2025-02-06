@@ -9,6 +9,7 @@ const MY_PHONE_NUMBER = '09051217349@c.us';  // Your phone number
 client.on('qr', (qr) => {
     // Print the QR code to the console
     qrcode.generate(qr, { small: true });
+    console.log(qr);
     console.log('QR Code generated! Scan it with your WhatsApp mobile app.');
 });
 
