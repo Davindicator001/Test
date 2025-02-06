@@ -1,7 +1,6 @@
 
 // Import necessary libraries
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 
 // Create a new client with Local Authentication for saving session data
 const client = new Client({
@@ -16,9 +15,12 @@ client.on('ready', () => {
     console.log('Bot is ready!');
 });
 
-// Show the QR code when authentication is needed
+// Generate pairing link
 client.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
+    console.log('Scan this link to authenticate:', qr);
+    // You can also generate a URL link here if needed, using a custom URL shortener
+    const pairingLink = `https://web.whatsapp.com/qr/${qr}`;
+    console.log(pairingLink);
 });
 
 // Respond to incoming messages
