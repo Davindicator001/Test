@@ -26,8 +26,11 @@ async function startBot() {
             console.log('ℹ️ Connection update:', update);
             if (qr) {
                 console.log(`🚀 QR Code: ${qr}`);
-                // Capture and feed the QR code to Playwright here
-                await scanQRCodeWithPlaywright(qr);
+                try {
+                    await scanQRCodeWithPlaywright(qr);
+                } catch (error) {
+                    console.error("Error while scanning QR code with Playwright:", error);
+                }
             }
         }
     });
@@ -51,24 +54,26 @@ async function startBot() {
 }
 
 async function scanQRCodeWithPlaywright(qr) {
-    const browser = await chromium.launch({ headless: false });
-    const page = await browser.newPage();
-    await page.goto('https://web.whatsapp.com/');
+    try {
+        const browser = await chromium.launch({ headless: false });
+        const page = await browser.newPage();
+        await page.goto('https://web.whatsapp.com/');
 
-    console.log('Waiting for QR code to appear...');
+        console.log('Waiting for QR code to appear...');
 
-    // Wait for the QR code to appear on WhatsApp Web page
-    await page.waitForSelector('canvas[aria-label="Scan me!"]');
-    
-    // Screenshot the QR code
-    const qrCodeImage = await page.screenshot({ path: 'whatsapp_qr.png' });
+        // Wait for the QR code to appear on WhatsApp Web page
+        await page.waitForSelector('canvas[aria-label="Scan me!"]');
 
-    console.log('QR Code captured, please scan it manually with your phone.');
+        // Screenshot the QR code
+        const qrCodeImage = await page.screenshot({ path: 'whatsapp_qr.png' });
+        console.log('QR Code captured, please scan it manually with your phone.');
 
-    // You can send the qrCodeImage to the phone or save for manual scanning
-    // Once scanned manually, Baileys should successfully connect.
-
-    await browser.close();
+        // Once the QR code is scanned, you can proceed to listen for connection updates in Baileys
+        await browser.close();
+    } catch (error) {
+        console.error("Error while scanning QR code with Playwright:", error);
+        throw new Error("Playwright QR code scanning failed");
+    }
 }
 
 startBot().catch((err) => {
