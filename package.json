@@ -2,9 +2,9 @@
   "name": "whatsapp-bot",
   "version": "1.0.0",
   "description": "WhatsApp bot with Puppeteer QR code scanning",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "whatsapp-web.js": "^1.26.0",
