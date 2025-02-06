@@ -51,9 +51,7 @@ conn.user.jid = `{formattedPhone}@s.whatsapp.net`;
 
         // Initialize the connection
         await conn.connect();
-    });
-}
-
+};
 startBot().catch((err) => {
     console.log('Error:', err);
 });
