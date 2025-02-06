@@ -1,30 +1,27 @@
 const { Client } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-
-// Your phone number (replace with your actual phone number)
-const MY_PHONE_NUMBER = 'YOUR_PHONE_NUMBER@c.us';  // Replace with your actual phone number
-
-// Create a new client
 const client = new Client();
 
-// Event listener for QR code generation
+// Define the phone number
+const MY_PHONE_NUMBER = '09051217349@c.us';  // Your phone number
+
+// Listen for the 'qr' event
 client.on('qr', (qr) => {
-    // Print QR code to the terminal
+    // Print the QR code to the console
     qrcode.generate(qr, { small: true });
+    console.log('QR Code generated! Scan it with your WhatsApp mobile app.');
 });
 
-// Event listener for when the client is ready
+// Listen for the 'ready' event
 client.on('ready', () => {
     console.log('Client is ready!');
 });
 
-// Event listener for incoming messages
-client.on('message', async (message) => {
-    // Check if the message is from your phone number and contains the text "ping"
-    if (message.from === MY_PHONE_NUMBER && message.body.toLowerCase() === 'ping') {
-        // Reply with "pong"
-        await message.reply('pong');
-        console.log('Pong replied!');
+// Listen for incoming messages
+client.on('message', async message => {
+    if (message.body.toLowerCase() === 'ping' && message.from === MY_PHONE_NUMBER) {
+        // Only respond if the message is from the correct phone number
+        client.sendMessage(message.from, 'pong');
     }
 });
 
