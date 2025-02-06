@@ -1,80 +1,67 @@
-const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const puppeteer = require('puppeteer'); // Puppeteer for scanning QR code
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const puppeteer = require('puppeteer');
 
-async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth');
+// Initialize WhatsApp Web client
+const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: { headless: false }, // We want Puppeteer to control the browser
+});
 
-    const sock = makeWASocket({
-        auth: state,
-        browser: ['Ubuntu', 'Chrome', '22.04.4']
-    });
+// This will capture the QR code and allow scanning using Puppeteer
+client.on('qr', async (qr) => {
+    console.log('QR RECEIVED', qr);
 
-    sock.ev.on('creds.update', saveCreds);
+    // Use Puppeteer to open the QR code in WhatsApp Web and scan it
+    await scanQRCodeWithPuppeteer(qr);
+});
 
-    // Your phone number
-    const phoneNumber = '+2349051217349'; // Use your sister's number or your own
-    const formattedPhone = phoneNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+// This will let us know when the client is ready
+client.on('ready', () => {
+    console.log('Client is ready!');
 
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
+    // Send a message to your number after authentication
+    sendMessageToMyNumber('09051217349', 'Hello, this is an automated message!');
+});
 
-        if (connection === 'open') {
-            console.log('✅ Connection established!');
-        } else if (connection === 'close') {
-            console.log('⚠️ Connection closed, reconnecting...');
-            startBot(); // Auto-reconnect
-        } else {
-            console.log('ℹ️ Connection update:', update);
-            if (qr) {
-                console.log(`🚀 QR Code: ${qr}`);
-                // Initiate Puppeteer to scan the QR code
-                await scanQRCodeWithPuppeteer(qr);
-            }
-        }
-    });
+// Start the client
+client.initialize();
 
-    sock.user = { id: formattedPhone };
-
-    sock.ev.on('messages.upsert', async (msg) => {
-        const message = msg.messages[0];
-        if (!message.message) return;
-
-        const sender = message.key.remoteJid;
-        const textMessage = message.message.conversation || "";
-
-        if (textMessage.toLowerCase() === "ping") {
-            await sock.sendMessage(sender, { text: "pong" });
-            console.log("Ping received, sent pong.");
-        }
-    });
-
-    console.log("🤖 Bot is running...");
-}
-
-// Puppeteer function to scan the QR code
+// Function to scan QR code using Puppeteer
 async function scanQRCodeWithPuppeteer(qrCode) {
+    // Launch Puppeteer browser instance
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    await page.goto('https://web.whatsapp.com/');
-    
-    // Wait for the QR code to load
+    // Go to WhatsApp Web
+    await page.goto('https://web.whatsapp.com');
+
+    // Wait for QR code to load
     await page.waitForSelector('canvas');
 
-    console.log('🚀 QR code is being scanned...');
+    console.log('QR code is being scanned...');
 
-    // Scan the QR Code
-    const scannedCode = await page.evaluate((qr) => {
-        const qrCanvas = document.querySelector('canvas');
-        return qrCanvas.toDataURL(); // You can adjust this based on the QR code you want to capture.
-    }, qrCode);
+    // Capture the QR code from the canvas element
+    const pairingCode = await page.evaluate(() => {
+        const canvas = document.querySelector('canvas');
+        return canvas.toDataURL();  // You can adjust this based on the QR code you want to capture
+    });
 
-    console.log(`🤖 Pairing code: ${scannedCode}`);
+    console.log(`Pairing Code: ${pairingCode}`);
 
-    // Close the browser after scanning
+    // Close Puppeteer browser after scanning
     await browser.close();
 }
 
-startBot().catch((err) => {
-    console.error("❌ Error:", err);
+// Function to send a message from your number after QR scan
+async function sendMessageToMyNumber(phoneNumber, message) {
+    const chat = await client.getChatById(`${phoneNumber}@c.us`);
+    await chat.sendMessage(message);
+    console.log(`Message sent to ${phoneNumber}: ${message}`);
+}
+
+client.on('message', message => {
+    // Respond to a message
+    if (message.body === 'ping') {
+        message.reply('pong');
+    }
 });
