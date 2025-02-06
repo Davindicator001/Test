@@ -27,6 +27,11 @@ async function startBot() {
             if (qr) {
                 console.log(`🚀 QR Code: ${qr}`);
             }
+
+            // This should log the pairing code (if available)
+            if (update && update.pairingCode) {
+                console.log(`🟢 Pairing Code: ${update.pairingCode}`);
+            }
         }
     });
 
