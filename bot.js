@@ -23,7 +23,7 @@ async function startBot() {
         // Log pairing code when it's needed
         conn.on('open', () => {
             console.log(`Pairing code: conn.base64EncodedAuthInfo().toString()`);
-        );
+        });
 
         // When the connection is open, save the session to avoid pairing code on future runs
         conn.on('open', () => 
