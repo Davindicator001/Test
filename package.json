@@ -2,14 +2,13 @@
   "name": "whatsapp-bot",
   "version": "1.0.0",
   "description": "A WhatsApp bot using Baileys and Playwright (or Puppeteer)",
-  "main": "index.js", // Or your main file name
+  "main": "index.js",
   "scripts": {
-    "start": "node index.js" // Or your main file name
+    "start": "node index.js" 
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.11", // Or latest version
-    "pino": "^8.11.0", // Or latest version
-    "playwright": "^1.37.0" // Or latest version (or "puppeteer": "^21.0.0" or latest version)
-  },
-  "devDependencies": {}
+    "@whiskeysockets/baileys": "^6.7.11",
+    "pino": "^8.11.0",
+    "puppeteer": "^21.0.0"
+  }
 }
