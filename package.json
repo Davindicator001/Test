@@ -1,14 +1,16 @@
 {
   "name": "whatsapp-bot",
   "version": "1.0.0",
-  "description": "A WhatsApp bot using Baileys and Playwright (or Puppeteer)",
-  "main": "index.js",
+  "description": "WhatsApp bot using Baileys and Puppeteer to scan QR code and get pairing code",
+  "main": "bot.js",
   "scripts": {
-    "start": "node bot.js" 
+    "start": "node bot.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.11",
-    "pino": "^8.11.0",
-    "playwright": "^1.37.0"
-  }
+    "@whiskeysockets/baileys": "^6.7.12",
+    "puppeteer": "^24.2.0"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
 }
