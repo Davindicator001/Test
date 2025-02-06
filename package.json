@@ -1,13 +1,13 @@
 {
   "name": "whatsapp-bot",
   "version": "1.0.0",
-  "description": "WhatsApp bot using Baileys and Puppeteer to scan QR code and get pairing code",
-  "main": "bot.js",
+  "description": "WhatsApp bot with Puppeteer QR code scanning",
+  "main": "index.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.12",
+    "whatsapp-web.js": "^1.26.0",
     "puppeteer": "^24.2.0"
   },
   "devDependencies": {},
