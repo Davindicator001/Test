@@ -1,15 +1,16 @@
+
 {
   "name": "whatsapp-bot",
   "version": "1.0.0",
-  "description": "A simple WhatsApp bot using whatsapp-web.js",
+  "description": "A WhatsApp bot using Baileys",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "whatsapp-web.js": "^1.19.1",
-    "qrcode-terminal": "^0.12.0"
-  }
+    "@adiwajshing/baileys": "^5.0.0",
+    "fs": "0.0.1"
+  },
+  "author": "Your Name",
+  "license": "MIT"
 }
