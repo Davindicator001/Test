@@ -1,19 +1,22 @@
-const { default: makeWASocket, useSingleFileAuthState, makeWALegacySocket } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 
-// Load authentication state
-const { state, saveState } = useSingleFileAuthState('session.json');
-
 async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth');
+
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: false // Disable QR code display
     });
 
     // Save authentication state when updated
-    sock.ev.on('creds.update', saveState);
+    sock.ev.on('creds.update', saveCreds);
 
-    // Listen for pairing code and log it instead of showing QR code
+    // Your phone number
+    const phoneNumber = '+2349051217349';
+    const formattedPhone = phoneNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+
+    // Listen for pairing code and log it
     sock.ev.on('connection.update', (update) => {
         const { pairingCode, connection } = update;
 
@@ -29,15 +32,13 @@ async function startBot() {
         }
     });
 
-    // Set the bot's phone number
-    const phoneNumber = '+2349051217349';
-    const formattedPhone = phoneNumber.replace(/[^0-9]/g, '');
-    sock.user = { id: `${formattedPhone}@s.whatsapp.net` };
+    // Authenticate with your phone number
+    sock.user = { id: formattedPhone };
 
     // Handle incoming messages
     sock.ev.on('messages.upsert', async (msg) => {
         const message = msg.messages[0];
-        if (!message.message) return; // Ignore system messages
+        if (!message.message) return;
 
         const sender = message.key.remoteJid;
         const textMessage = message.message.conversation || "";
