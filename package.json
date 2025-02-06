@@ -9,6 +9,6 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.11",
     "pino": "^8.11.0",
-    "puppeteer": "^21.0.0"
+    "playwright": "^1.37.0"
   }
 }
