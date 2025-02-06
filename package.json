@@ -7,7 +7,7 @@
     "start": "node bot.js"
   },
   "dependencies": {
-    "@hapi/boom": "^11.1.3",
+    "@hapi/boom": "^9.1.4",
     "@whiskeysockets/baileys": "^6.4.0",
     "fs": "0.0.1-security"
   },
