@@ -4,7 +4,7 @@
   "description": "A WhatsApp bot using Baileys and Playwright (or Puppeteer)",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js" 
+    "start": "node bot.js" 
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.11",
