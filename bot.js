@@ -1,36 +1,44 @@
 
-// Import necessary libraries
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { WAConnection, MessageType } = require('@adiwajshing/baileys');
+const fs = require('fs');
 
-// Create a new client with Local Authentication for saving session data
-const client = new Client({
-    authStrategy: new LocalAuth(),  // Ensures session is saved
+async function startBot() {
+    const conn = new WAConnection();
+
+    // Load previous session if it exists, else it will generate a new session on first run
+    conn.loadAuthInfo('session.json');
+
+    // Log QR code when it's needed
+    conn.on('qr', qr => {
+        console.log('Scan this QR code in WhatsApp to authenticate:');
+        console.log(qr);  // This will log the QR code for the first-time pairing
+    });
+
+    // When the connection is open, save the session to avoid QR on future runs
+    conn.on('open', () => {
+        console.log('Connection is open');
+        fs.writeFileSync('session.json', JSON.stringify(conn.base64EncodedAuthInfo(), null, 2));
+    });
+
+    // Respond to "ping" with "pong"
+    conn.on('chat-update', async (chat) => {
+        if (!chat.hasNewMessage) return;
+        const message = chat.messages.all()[0];
+
+        // Check if the message is from the bot number
+        if (message.key.remoteJid === conn.user.jid) {
+            // Check if the message content is 'ping'
+            if (message.message.conversation === 'ping') {
+                console.log('Ping received, sending pong...');
+                await conn.sendMessage(message.key.remoteJid, 'pong', MessageType.text);
+            }
+        }
+    });
+
+    // Initialize the connection
+    await conn.connect();
+}
+
+startBot().catch((err) => {
+    console.log('Error:', err);
 });
-
-// Replace with the bot's WhatsApp number (use the full international format, e.g. '+1234567890')
-const botNumber = '+2349051217349';
-
-// When the client is ready (authenticated)
-client.on('ready', () => {
-    console.log('Bot is ready!');
-});
-
-// Generate pairing link
-client.on('qr', (qr) => {
-    console.log('Scan this link to authenticate:', qr);
-    // You can also generate a URL link here if needed, using a custom URL shortener
-    const pairingLink = `https://web.whatsapp.com/qr/${qr}`;
-    console.log(pairingLink);
-});
-
-// Respond to incoming messages
-client.on('message', message => {
-    // Check if the message is "ping" and if it's from the bot's number
-    if (message.body.toLowerCase() === 'ping' && message.from === botNumber) {
-        // Send a "pong" response
-        message.reply('pong');
-    }
-});
-
-// Initialize the client
-client.initialize();
